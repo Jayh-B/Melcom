@@ -1,0 +1,97 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "A product available in the store.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "sku": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "stock": { "type": "number" },
+        "category": { "type": "string" },
+        "image": { "type": "string" }
+      },
+      "required": ["id", "sku", "name", "price", "stock", "category"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "A customer order.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "customerId": { "type": "string" },
+        "items": { "type": "array" },
+        "totalAmount": { "type": "number" },
+        "taxAmount": { "type": "number" },
+        "paymentMethod": { "type": "string" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "customerId", "items", "totalAmount", "taxAmount", "paymentMethod", "status", "createdAt"]
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "A customer profile.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "firstName": { "type": "string" },
+        "lastName": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "address": { "type": "string" },
+        "loyaltyPoints": { "type": "number" },
+        "lastPurchase": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "firstName", "lastName", "email", "phone", "loyaltyPoints"]
+    },
+    "Supplier": {
+      "title": "Supplier",
+      "description": "A product supplier.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" }
+      },
+      "required": ["id", "name", "email"]
+    },
+    "Interaction": {
+      "title": "Interaction",
+      "description": "A user interaction with a product.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "productId": { "type": "string" },
+        "type": { "type": "string", "enum": ["view", "cart"] },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "productId", "type", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Collection of products."
+    },
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Collection of orders."
+    },
+    "/customers/{customerId}": {
+      "schema": "Customer",
+      "description": "Collection of customers."
+    },
+    "/suppliers/{supplierId}": {
+      "schema": "Supplier",
+      "description": "Collection of suppliers."
+    },
+    "/interactions/{interactionId}": {
+      "schema": "Interaction",
+      "description": "Collection of user interactions."
+    }
+  }
+}
