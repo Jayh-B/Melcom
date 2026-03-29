@@ -240,6 +240,7 @@ export default function AdminApp() {
     setIsAdmin(true);
     setAuthLoading(false);
     setAuthError('');
+    addToast('Signed in as Dev Admin (bypass)', 'success');
   };
 
   // ── Real-time data ─────────────────────────────────────────────────────────
