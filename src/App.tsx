@@ -21,7 +21,9 @@ import { ProductDetail } from "./pages/ProductDetail";
 import { OrderHistory } from "./pages/OrderHistory";
 import { PrivacyPolicy } from "./pages/PrivacyPolicy";
 import { InvoiceButton } from "./components/InvoiceButton";
-import { GoogleGenerativeAI } from "@google/genai";
+// Lazy-load Gemini SDK at runtime (optional). Static import breaks Vite when
+// the package doesn't expose the expected browser export, so we import
+// dynamically where it's used and provide safe fallbacks.
 
 // ─── Navbar ───────────────────────────────────────────────────────────────────
 
@@ -991,18 +993,45 @@ function AppContent() {
         }
 
         const apiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
-        const ai = new GoogleGenerativeAI(apiKey);
-        const model = ai.getGenerativeModel({ model: 'gemini-1.5-flash' });
-        const categoryList = [...new Set(products.map(p => p.category))].join(', ');
-        const prompt = `You are a retail recommendation engine for Melcom Ghana.
-Categories available: ${categoryList}.
-User's recent interests: ${interactionCategories.length > 0 ? interactionCategories.join(', ') : 'new user, no history'}.
-Return a JSON array of exactly 4 category names from the available list that would be most relevant to show on the homepage. Return ONLY the JSON array, no other text.`;
-        const result = await model.generateContent(prompt);
-        const text = result.response.text().replace(/```json|```/g, '').trim();
-        const cats: string[] = JSON.parse(text);
-        const filtered = cats.flatMap(cat => products.filter(p => p.category === cat).slice(0, 1));
-        setRecommendations(filtered.length >= 4 ? filtered.slice(0, 4) : products.slice(0, 4));
+
+        // Try to dynamically import the Gemini SDK. If unavailable or the
+        // expected API isn't present, gracefully fall back to a simple
+        // recommendations heuristic so the UI still renders.
+        try {
+          const mod: any = await import('@google/genai').catch(() => null);
+          if (!mod) throw new Error('Gemini SDK not found');
+
+          // Try several possible export shapes used by different SDK builds
+          const SDK = mod.GoogleGenerativeAI ?? mod.default ?? mod.GenerativeModelsClient ?? mod.TextServiceClient;
+          if (!SDK) throw new Error('No compatible Gemini SDK export');
+
+          const ai = new SDK(apiKey);
+
+          if (typeof ai.getGenerativeModel === 'function') {
+            const model = ai.getGenerativeModel({ model: 'gemini-1.5-flash' });
+            const categoryList = [...new Set(products.map(p => p.category))].join(', ');
+            const prompt = `You are a retail recommendation engine for Melcom Ghana.\nCategories available: ${categoryList}.\nUser's recent interests: ${interactionCategories.length > 0 ? interactionCategories.join(', ') : 'new user, no history'}.\nReturn a JSON array of exactly 4 category names from the available list that would be most relevant to show on the homepage. Return ONLY the JSON array, no other text.`;
+            const result = await model.generateContent(prompt);
+            const text = (result?.response?.text ? result.response.text() : result?.text ?? '').replace(/```json|```/g, '').trim();
+            const cats: string[] = JSON.parse(text);
+            const filtered = cats.flatMap(cat => products.filter(p => p.category === cat).slice(0, 1));
+            setRecommendations(filtered.length >= 4 ? filtered.slice(0, 4) : products.slice(0, 4));
+          } else if (typeof ai.generateContent === 'function') {
+            // Alternate SDK shape
+            const categoryList = [...new Set(products.map(p => p.category))].join(', ');
+            const prompt = `You are a retail recommendation engine for Melcom Ghana.\nCategories available: ${categoryList}.\nUser's recent interests: ${interactionCategories.length > 0 ? interactionCategories.join(', ') : 'new user, no history'}.\nReturn a JSON array of exactly 4 category names from the available list that would be most relevant to show on the homepage. Return ONLY the JSON array, no other text.`;
+            const result = await ai.generateContent({ model: 'gemini-1.5-flash', prompt });
+            const text = (result?.text ?? '').replace(/```json|```/g, '').trim();
+            const cats: string[] = JSON.parse(text);
+            const filtered = cats.flatMap(cat => products.filter(p => p.category === cat).slice(0, 1));
+            setRecommendations(filtered.length >= 4 ? filtered.slice(0, 4) : products.slice(0, 4));
+          } else {
+            throw new Error('Gemini SDK present but has incompatible API');
+          }
+        } catch (e) {
+          console.warn('Gemini recommendations disabled:', e);
+          setRecommendations(products.slice(0, 4));
+        }
       } catch {
         setRecommendations(products.slice(0, 4));
       }
