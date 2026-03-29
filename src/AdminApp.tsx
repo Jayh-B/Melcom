@@ -32,16 +32,15 @@ function AdminLogin({ onLogin, error, devBypass, onDevSignIn }: { onLogin: () =>
           <h1 className="text-3xl font-black text-white">Admin Portal</h1>
           <p className="text-gray-500 text-sm">Secure access for Melcom authorised personnel only.</p>
         </div>
-        <button onClick={onLogin}
-          className="w-full bg-red-600 text-white py-4 rounded-2xl font-bold hover:bg-red-700 transition-all active:scale-95 shadow-lg shadow-red-600/20 flex items-center justify-center gap-2">
-          <LogIn size={18} /> Authenticate with Google
-        </button>
-        {devBypass && (
+        <div className="w-full">
+          <div className="w-full bg-gray-800 text-white py-3 rounded-2xl font-bold flex items-center justify-center gap-2">
+            <LogIn size={18} /> Google authentication is temporarily disabled
+          </div>
           <button onClick={onDevSignIn}
             className="w-full mt-3 bg-gray-800 text-white py-3 rounded-2xl font-bold hover:bg-gray-900 transition-all active:scale-95 shadow-sm flex items-center justify-center gap-2">
             <UserCheck size={16} /> Dev sign in (bypass)
           </button>
-        )}
+        </div>
         {error && (
           <div className="flex items-center gap-2 text-red-400 text-sm font-medium bg-red-500/10 px-4 py-3 rounded-xl border border-red-500/20">
             <AlertCircle size={15} className="shrink-0" /> {error}
@@ -393,7 +392,7 @@ export default function AdminApp() {
       </div>
     );
   }
-  if (!isAdmin) return <AdminLogin onLogin={handleLogin} error={authError} devBypass={import.meta.env.VITE_DEV_AUTH_BYPASS === 'true'} onDevSignIn={handleDevSignIn} />;
+  if (!isAdmin) return <AdminLogin onLogin={handleLogin} error={authError} devBypass={true} onDevSignIn={handleDevSignIn} />;
 
   // ── Sidebar nav items ─────────────────────────────────────────────────────
   const navItems = [
