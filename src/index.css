@@ -10,34 +10,32 @@
   body {
     @apply bg-white text-gray-900 antialiased selection:bg-red-100 selection:text-red-900;
   }
+
+  /* Accessible focus visible for keyboard navigation */
+  :focus-visible {
+    @apply outline outline-2 outline-offset-2 outline-red-600 rounded;
+  }
 }
 
-/* Custom scrollbar for a more premium feel */
-::-webkit-scrollbar {
-  width: 6px;
+/* ── Skeleton shimmer ────────────────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
-::-webkit-scrollbar-track {
-  @apply bg-transparent;
+.animate-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #fafafa 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
 }
 
-::-webkit-scrollbar-thumb {
-  @apply bg-gray-200 rounded-full hover:bg-gray-300 transition-colors;
-}
-
-/* Glassmorphism utility */
+/* ── Glassmorphism utility ───────────────────────────────────────────────── */
 .glass {
   @apply bg-white/80 backdrop-blur-md border border-white/20;
 }
 
-/* Bento grid utility */
-.bento-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1.5rem;
-}
-
-/* Smooth transitions */
-* {
-  @apply transition-all duration-300 ease-in-out;
-}
+/* ── Custom scrollbar ────────────────────────────────────────────────────── */
+::-webkit-scrollbar          { width: 5px; height: 5px; }
+::-webkit-scrollbar-track    { background: transparent; }
+::-webkit-scrollbar-thumb    { @apply bg-gray-200 rounded-full; }
+::-webkit-scrollbar-thumb:hover { @apply bg-gray-300; }

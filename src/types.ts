@@ -7,15 +7,17 @@ export interface Product {
   stock: number;
   category: string;
   image: string;
-  variations?: {
-    name: string; // e.g., "Size", "Color"
-    options: string[]; // e.g., ["S", "M", "L"]
-  }[];
+  images?: string[];
+  brand?: string;
+  rating?: number;
+  reviewCount?: number;
+  specifications?: Record<string, string>;
+  variations?: { name: string; options: string[] }[];
 }
 
 export interface CartItem extends Product {
   quantity: number;
-  selectedVariations?: Record<string, string>; // e.g., { "Size": "M", "Color": "Black" }
+  selectedVariations?: Record<string, string>;
 }
 
 export interface TaxBreakdown {
@@ -26,6 +28,14 @@ export interface TaxBreakdown {
   totalTax: number;
 }
 
+export interface ShippingDetails {
+  fullName: string;
+  phone: string;
+  address: string;
+  city: string;
+  email?: string;
+}
+
 export interface Order {
   id: string;
   customerId: string;
@@ -33,8 +43,10 @@ export interface Order {
   totalAmount: number;
   taxAmount: number;
   paymentMethod: string;
-  status: string;
+  paymentReference?: string;
+  status: 'Pending' | 'Paid' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
   createdAt: string;
+  shippingDetails?: ShippingDetails;
 }
 
 export interface Customer {
@@ -52,6 +64,13 @@ export interface Supplier {
   id: string;
   name: string;
   email: string;
+  phone?: string;
+  address?: string;
+  categories?: string[];
+  paymentTerms?: string;
+  status: 'Active' | 'Inactive';
+  createdAt: string;
+  notes?: string;
 }
 
 export interface AdminStats {
@@ -60,4 +79,27 @@ export interface AdminStats {
   orderCount: number;
   customerCount: number;
   lowStockItems: number;
+}
+
+export interface ToastMessage {
+  id: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+  message: string;
+  duration?: number;
+}
+
+export interface UserRole {
+  uid: string;
+  email: string;
+  displayName: string;
+  role: 'admin' | 'manager' | 'customer';
+  createdAt: string;
+  photoURL?: string;
+}
+
+export interface CookieConsent {
+  analytics: boolean;
+  marketing: boolean;
+  functional: boolean;
+  timestamp: string;
 }
