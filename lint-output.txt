@@ -1,0 +1,15 @@
+﻿
+> melcom-ghana-ebusiness@1.0.0 lint
+> tsc --noEmit
+
+src/AdminApp.tsx(124,28): error TS2503: Cannot find namespace 'React'.
+src/App.tsx(24,10): error TS2305: Module '"@google/genai"' has no exported member 'GoogleGenerativeAI'.
+src/App.tsx(616,13): error TS2367: This comparison appears to be unintentional because the types 'boolean' and 'string' have no overlap.
+src/components/SearchAutocomplete.tsx(60,28): error TS2503: Cannot find namespace 'React'.
+src/components/Skeleton.tsx(62,47): error TS2322: Type '{ key: number; className: string; }' is not assignable to type '{ className?: string; }'.
+  Property 'key' does not exist on type '{ className?: string; }'.
+src/main.tsx(36,10): error TS2339: Property 'state' does not exist on type 'ErrorBoundary'.
+src/main.tsx(50,38): error TS2339: Property 'state' does not exist on type 'ErrorBoundary'.
+src/main.tsx(53,24): error TS2339: Property 'state' does not exist on type 'ErrorBoundary'.
+src/main.tsx(57,15): error TS2339: Property 'state' does not exist on type 'ErrorBoundary'.
+src/main.tsx(57,43): error TS2339: Property 'props' does not exist on type 'ErrorBoundary'.

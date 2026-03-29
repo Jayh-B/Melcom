@@ -1,6 +1,7 @@
 import express from 'express';
 import path from 'path';
 import crypto from 'crypto';
+import fs from 'node:fs/promises';
 import { createServer as createViteServer } from 'vite';
 import { fileURLToPath } from 'url';
 
@@ -283,9 +284,24 @@ async function startServer() {
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: { middlewareMode: true },
-      appType: 'spa',
+      appType: 'custom',
     });
     app.use(vite.middlewares);
+
+    app.get('*', async (req, res, next) => {
+      try {
+        const url = req.originalUrl;
+        const indexPath = path.resolve(__dirname, 'index.html');
+        let template = await fs.readFile(indexPath, 'utf-8');
+        template = await vite.transformIndexHtml(url, template);
+        res.status(200).set({ 'Content-Type': 'text/html' }).end(template);
+      } catch (e: any) {
+        console.error('[Catch-all] Error serving index.html:', e);
+        vite.ssrFixStacktrace(e);
+        next(e);
+      }
+    });
+
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
