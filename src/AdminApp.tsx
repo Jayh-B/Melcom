@@ -20,7 +20,7 @@ import { StatCardSkeleton } from './components/Skeleton';
 
 // ── Admin Login Screen ────────────────────────────────────────────────────────
 
-function AdminLogin({ onLogin, error }: { onLogin: () => void; error: string }) {
+function AdminLogin({ onLogin, error, devBypass, onDevSignIn }: { onLogin: () => void; error: string; devBypass?: boolean; onDevSignIn?: () => void }) {
   return (
     <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
@@ -36,6 +36,12 @@ function AdminLogin({ onLogin, error }: { onLogin: () => void; error: string }) 
           className="w-full bg-red-600 text-white py-4 rounded-2xl font-bold hover:bg-red-700 transition-all active:scale-95 shadow-lg shadow-red-600/20 flex items-center justify-center gap-2">
           <LogIn size={18} /> Authenticate with Google
         </button>
+        {devBypass && (
+          <button onClick={onDevSignIn}
+            className="w-full mt-3 bg-gray-800 text-white py-3 rounded-2xl font-bold hover:bg-gray-900 transition-all active:scale-95 shadow-sm flex items-center justify-center gap-2">
+            <UserCheck size={16} /> Dev sign in (bypass)
+          </button>
+        )}
         {error && (
           <div className="flex items-center gap-2 text-red-400 text-sm font-medium bg-red-500/10 px-4 py-3 rounded-xl border border-red-500/20">
             <AlertCircle size={15} className="shrink-0" /> {error}
@@ -226,6 +232,16 @@ export default function AdminApp() {
     });
   }, []);
 
+  // Dev auth bypass for local development
+  const handleDevSignIn = () => {
+    if (import.meta.env.MODE === 'production') return;
+    const devUser = { uid: 'dev-admin', email: 'dev@local', displayName: 'Dev Admin', photoURL: '' };
+    setUser(devUser as any);
+    setIsAdmin(true);
+    setAuthLoading(false);
+    setAuthError('');
+  };
+
   // ── Real-time data ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (!isAdmin) return;
@@ -376,7 +392,7 @@ export default function AdminApp() {
       </div>
     );
   }
-  if (!isAdmin) return <AdminLogin onLogin={handleLogin} error={authError} />;
+  if (!isAdmin) return <AdminLogin onLogin={handleLogin} error={authError} devBypass={import.meta.env.VITE_DEV_AUTH_BYPASS === 'true'} onDevSignIn={handleDevSignIn} />;
 
   // ── Sidebar nav items ─────────────────────────────────────────────────────
   const navItems = [
