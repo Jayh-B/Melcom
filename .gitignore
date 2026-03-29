@@ -4,5 +4,25 @@ dist/
 coverage/
 .DS_Store
 *.log
-.env*
+
+# Environment variables — NEVER commit real secrets
+.env
+.env.local
+.env.*.local
+
+# Keep the example file
 !.env.example
+
+# Firebase service account keys
+*serviceAccount*.json
+firebase-debug.log
+.firebase/
+
+# Editor directories
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+Thumbs.db

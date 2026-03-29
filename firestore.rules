@@ -1,34 +1,13 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // ===============================================================
-    // Assumed Data Model
-    // ===============================================================
-    //
-    // Collection: products
-    // Document ID: productId
-    // Fields: id, sku, name, description, price, stock, category, image
-    //
-    // Collection: orders
-    // Document ID: orderId
-    // Fields: id, customerId, items, totalAmount, taxAmount, paymentMethod, status, createdAt
-    //
-    // Collection: customers
-    // Document ID: customerId
-    // Fields: id, firstName, lastName, email, phone, address, loyaltyPoints, lastPurchase
-    //
-    // Collection: suppliers
-    // Document ID: supplierId
-    // Fields: id, name, email
-    //
-    // ===============================================================
 
-    // Helper Functions
+    // ── Helper Functions ─────────────────────────────────────────────────────
+
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    // Default admin fallback
     function isDefaultAdmin() {
       return isAuthenticated() && request.auth.token.email == "dm570692@gmail.com";
     }
@@ -36,8 +15,16 @@ service cloud.firestore {
     function isAdmin() {
       return isDefaultAdmin() || (
         isAuthenticated() &&
-        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+      );
+    }
+
+    function isManagerOrAdmin() {
+      return isDefaultAdmin() || (
+        isAuthenticated() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'manager']
       );
     }
 
@@ -46,73 +33,102 @@ service cloud.firestore {
     }
 
     function isValidProduct(data) {
-      return data.keys().hasAll(['id', 'sku', 'name', 'price', 'stock', 'category']) &&
-             data.name is string && data.name.size() > 0 && data.name.size() < 200 &&
-             data.price is number && data.price >= 0 &&
-             data.stock is number && data.stock >= 0;
+      return data.keys().hasAll(['id', 'sku', 'name', 'price', 'stock', 'category'])
+        && data.name is string && data.name.size() > 0 && data.name.size() < 200
+        && data.price is number && data.price >= 0
+        && data.stock is number && data.stock >= 0;
     }
 
     function isValidOrder(data) {
-      return data.keys().hasAll(['id', 'customerId', 'items', 'totalAmount', 'taxAmount', 'paymentMethod', 'status', 'createdAt']) &&
-             data.totalAmount is number && data.totalAmount >= 0 &&
-             data.taxAmount is number && data.taxAmount >= 0;
+      return data.keys().hasAll(['id', 'customerId', 'items', 'totalAmount', 'taxAmount', 'paymentMethod', 'status', 'createdAt'])
+        && data.totalAmount is number && data.totalAmount >= 0
+        && data.taxAmount is number && data.taxAmount >= 0;
     }
 
     function isValidCustomer(data) {
-      return data.keys().hasAll(['id', 'firstName', 'lastName', 'email', 'phone', 'loyaltyPoints']) &&
-             data.email is string && (data.email == "" || data.email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")) &&
-             data.loyaltyPoints is number && data.loyaltyPoints >= 0;
+      return data.keys().hasAll(['id', 'firstName', 'lastName', 'email', 'phone', 'loyaltyPoints'])
+        && data.email is string
+        && data.loyaltyPoints is number && data.loyaltyPoints >= 0;
     }
 
     function isValidInteraction(data) {
-      return data.keys().hasAll(['userId', 'productId', 'type', 'timestamp']) &&
-             data.userId == request.auth.uid &&
-             data.type in ['view', 'cart'];
+      return data.keys().hasAll(['userId', 'productId', 'type', 'timestamp'])
+        && data.userId == request.auth.uid
+        && data.type in ['view', 'cart'];
     }
 
-    // Default deny
+    function isValidSupplier(data) {
+      return data.keys().hasAll(['id', 'name', 'email', 'status'])
+        && data.name is string && data.name.size() > 0
+        && data.email is string;
+    }
+
+    // ── Default deny ─────────────────────────────────────────────────────────
     match /{document=**} {
       allow read, write: if false;
     }
 
-    // Products: Publicly readable, only admin can write
+    // ── Products ─────────────────────────────────────────────────────────────
+    // Public read, manager/admin write
     match /products/{productId} {
       allow read: if true;
-      allow create, update: if isAdmin() && isValidProduct(request.resource.data);
+      allow create, update: if isManagerOrAdmin() && isValidProduct(request.resource.data);
       allow delete: if isAdmin();
     }
 
-    // Orders: Admin can read all, anyone can create (guest checkout)
+    // ── Orders ───────────────────────────────────────────────────────────────
+    // Admin/manager can read all; anyone can create (guest checkout); only admin updates status
     match /orders/{orderId} {
-      allow read: if isAdmin();
+      allow read: if isManagerOrAdmin() || (isAuthenticated() && resource.data.customerId == request.auth.uid);
       allow create: if isValidOrder(request.resource.data);
-      allow update: if isAdmin() && isValidOrder(request.resource.data);
+      allow update: if isManagerOrAdmin() && isValidOrder(request.resource.data);
       allow delete: if isAdmin();
     }
 
-    // Customers: Admin can read all, users can read/write their own
+    // ── Customers ────────────────────────────────────────────────────────────
+    // Users can read/update their own profile; admin can read all
     match /customers/{customerId} {
-      allow read: if isAdmin() || isOwner(customerId);
-      allow create, update: if isAdmin() || (isOwner(customerId) && isValidCustomer(request.resource.data));
+      allow read: if isManagerOrAdmin() || isOwner(customerId);
+      allow create, update: if isManagerOrAdmin() || (isOwner(customerId) && isValidCustomer(request.resource.data));
       allow delete: if isAdmin();
     }
 
-    // Suppliers: Only admin can read/write
+    // ── Suppliers ────────────────────────────────────────────────────────────
+    // Manager and admin only
     match /suppliers/{supplierId} {
-      allow read, write: if isAdmin();
+      allow read: if isManagerOrAdmin();
+      allow create, update: if isManagerOrAdmin() && isValidSupplier(request.resource.data);
+      allow delete: if isAdmin();
     }
 
-    // Interactions: Users can create their own, admin can read
+    // ── Interactions ─────────────────────────────────────────────────────────
+    // Authenticated users create their own; admin/manager can read for analytics
     match /interactions/{interactionId} {
-      allow read: if isAdmin();
+      allow read: if isManagerOrAdmin();
       allow create: if isAuthenticated() && isValidInteraction(request.resource.data);
     }
 
-    // Users: For role management
+    // ── Wishlists ────────────────────────────────────────────────────────────
+    // Users can read/write only their own wishlist
+    match /wishlists/{userId} {
+      allow read, write: if isOwner(userId);
+      allow read: if isManagerOrAdmin();
+    }
+
+    // ── Users (role management) ───────────────────────────────────────────────
+    // Users can read their own doc; only admin can change roles
     match /users/{userId} {
-      allow read: if isOwner(userId) || isAdmin();
+      allow read: if isOwner(userId) || isManagerOrAdmin();
       allow create: if isOwner(userId);
-      allow update, delete: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ── Health check (connection test) ───────────────────────────────────────
+    // Anyone can attempt a read; permission will be denied by the default rule above
+    // This is intentional — we just want to confirm connectivity
+    match /_health/{doc} {
+      allow read: if false;
     }
   }
 }

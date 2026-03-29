@@ -3,11 +3,91 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Google AI Studio App</title>
+
+    <!-- Primary Meta -->
+    <title>Melcom Ghana — Shop Electronics, Groceries, Furniture & More</title>
+    <meta name="description" content="Ghana's premier omnichannel retailer. Shop electronics, appliances, groceries, fashion and furniture online with same-day delivery in Accra, Kumasi & Takoradi." />
+    <meta name="keywords" content="Melcom Ghana, online shopping Ghana, electronics Ghana, groceries Ghana, furniture Ghana, MoMo payment" />
+    <meta name="author" content="Melcom Ghana Limited" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Open Graph / Social -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Melcom Ghana" />
+    <meta property="og:title" content="Melcom Ghana — Retail Redefined" />
+    <meta property="og:description" content="Shop electronics, groceries, furniture & fashion with same-day delivery in major Ghanaian cities." />
+    <meta property="og:image" content="/og-image.png" />
+    <meta property="og:url" content="https://melcom.com.gh" />
+    <meta property="og:locale" content="en_GH" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@MelcomGhana" />
+    <meta name="twitter:title" content="Melcom Ghana — Retail Redefined" />
+    <meta name="twitter:description" content="Shop with Ghana's #1 retail chain. Same-day delivery, MoMo payments, loyalty rewards." />
+    <meta name="twitter:image" content="/og-image.png" />
+
+    <!-- PWA / Mobile Web -->
+    <meta name="theme-color" content="#E12222" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Melcom" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Preconnect to critical origins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://picsum.photos" />
+    <link rel="dns-prefetch" href="https://api.paystack.co" />
+    <link rel="dns-prefetch" href="https://firestore.googleapis.com" />
+
+    <!-- Sentry Error Monitoring (CDN — tree-shakeable, ~70 kB gzipped) -->
+    <script
+      src="https://browser.sentry-cdn.com/7.99.0/bundle.tracing.replay.min.js"
+      crossorigin="anonymous"
+      defer
+    ></script>
+
+    <!-- Paystack Inline Payment Popup -->
+    <script src="https://js.paystack.co/v1/inline.js" defer></script>
+
+    <!-- Firebase App Check: enable debug token in dev so CI doesn't fail -->
+    <script>
+      if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+        // This token is whitelisted in your Firebase console for development.
+        // Never ship a real token in production HTML.
+        self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+      }
+    </script>
+
+    <!-- Structured Data (Local Business) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "Melcom Ghana",
+      "url": "https://melcom.com.gh",
+      "logo": "https://melcom.com.gh/logo.png",
+      "description": "Ghana's premier omnichannel retail chain",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Independence Avenue",
+        "addressLocality": "Accra",
+        "addressCountry": "GH"
+      },
+      "telephone": "+233302770000",
+      "email": "support@melcom.com.gh",
+      "currenciesAccepted": "GHS",
+      "paymentAccepted": "Mobile Money, Credit Card, Cash",
+      "openingHours": "Mo-Su 08:00-21:00"
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>
+    <!-- Module entry point — Vite will resolve all imports -->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

@@ -12,7 +12,13 @@
         "price": { "type": "number" },
         "stock": { "type": "number" },
         "category": { "type": "string" },
-        "image": { "type": "string" }
+        "image": { "type": "string" },
+        "images": { "type": "array" },
+        "brand": { "type": "string" },
+        "rating": { "type": "number" },
+        "reviewCount": { "type": "number" },
+        "specifications": { "type": "object" },
+        "variations": { "type": "array" }
       },
       "required": ["id", "sku", "name", "price", "stock", "category"]
     },
@@ -27,8 +33,10 @@
         "totalAmount": { "type": "number" },
         "taxAmount": { "type": "number" },
         "paymentMethod": { "type": "string" },
-        "status": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" }
+        "paymentReference": { "type": "string" },
+        "status": { "type": "string", "enum": ["Pending", "Paid", "Processing", "Shipped", "Delivered", "Cancelled"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "shippingDetails": { "type": "object" }
       },
       "required": ["id", "customerId", "items", "totalAmount", "taxAmount", "paymentMethod", "status", "createdAt"]
     },
@@ -55,9 +63,16 @@
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
-        "email": { "type": "string" }
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "address": { "type": "string" },
+        "categories": { "type": "array" },
+        "paymentTerms": { "type": "string" },
+        "status": { "type": "string", "enum": ["Active", "Inactive"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "notes": { "type": "string" }
       },
-      "required": ["id", "name", "email"]
+      "required": ["id", "name", "email", "status"]
     },
     "Interaction": {
       "title": "Interaction",
@@ -70,28 +85,39 @@
         "timestamp": { "type": "string", "format": "date-time" }
       },
       "required": ["userId", "productId", "type", "timestamp"]
+    },
+    "Wishlist": {
+      "title": "Wishlist",
+      "description": "A customer's saved product IDs.",
+      "type": "object",
+      "properties": {
+        "items": { "type": "array" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["items"]
+    },
+    "UserRole": {
+      "title": "UserRole",
+      "description": "A platform user with an assigned role.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "manager", "customer"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role", "createdAt"]
     }
   },
   "firestore": {
-    "/products/{productId}": {
-      "schema": "Product",
-      "description": "Collection of products."
-    },
-    "/orders/{orderId}": {
-      "schema": "Order",
-      "description": "Collection of orders."
-    },
-    "/customers/{customerId}": {
-      "schema": "Customer",
-      "description": "Collection of customers."
-    },
-    "/suppliers/{supplierId}": {
-      "schema": "Supplier",
-      "description": "Collection of suppliers."
-    },
-    "/interactions/{interactionId}": {
-      "schema": "Interaction",
-      "description": "Collection of user interactions."
-    }
+    "/products/{productId}":       { "schema": "Product",     "description": "Product catalogue." },
+    "/orders/{orderId}":           { "schema": "Order",       "description": "Customer orders." },
+    "/customers/{customerId}":     { "schema": "Customer",    "description": "CRM customer profiles." },
+    "/suppliers/{supplierId}":     { "schema": "Supplier",    "description": "Supply chain suppliers." },
+    "/interactions/{interactionId}": { "schema": "Interaction", "description": "Behavioural interaction events." },
+    "/wishlists/{userId}":         { "schema": "Wishlist",    "description": "Per-user wishlist (keyed by uid)." },
+    "/users/{userId}":             { "schema": "UserRole",    "description": "Platform users and their roles." }
   }
 }
