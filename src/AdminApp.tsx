@@ -391,6 +391,11 @@ export default function AdminApp() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
+      {import.meta.env.MODE !== 'production' && (typeof window !== 'undefined') && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && (
+        <div className="w-full bg-yellow-50 border-b border-yellow-200 text-yellow-800 p-3 text-sm flex items-center justify-center">
+          ⚠️ Firebase OAuth Notice — running on <strong className="mx-1">{window.location.hostname}</strong>. If Google Sign-In fails, add this domain to your Firebase Console → Authentication → Settings → Authorized domains.
+        </div>
+      )}
       {/* ── Sidebar ─────────────────────────────────────────────────────── */}
       <aside className="w-64 bg-gray-900 text-white flex flex-col p-5 sticky top-0 h-screen overflow-y-auto shrink-0">
         <div className="flex items-center gap-3 mb-10">
